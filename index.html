@@ -1,89 +1,39 @@
 <html>
-	<head>
-		<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
- 		<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <head>
 
- 		<style>
- 			#map {
- 				height: 540px;
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+    <link rel="stylesheet" href="./index.css" />
 
- 			}
- 		</style>
-	</head>
-	<body>
-		<h1>My eBird Analyzer</h1>
-		<div id="map"></div>
-		<script>
-			$(document).ready(function() {
-				var map = L.map('map').setView([39.73, -104.99], 4);
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src='./index.js'></script>
 
-				L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	    		attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-				}).addTo(map);
+    <!-- offline working:
+    <link rel="stylesheet" href="./vendor/leaflet-0.7.3/leaflet.css" />
+    <script src="./vendor/jquery-2.1.4.min.js"></script>
+    <script src="./vendor/leaflet-0.7.3/leaflet.js"></script>
+    <script src="./vendor/underscore.min.js"></script>
+    -->
+  </head>
+  <body>
+    <h1>My eBird Analyzer</h1>
+    <div id="map"></div>
 
+    <div class="data-cards-wrapper">
+      <div id="num-places" class="data-card">
+        <h3>Number of Places Birded</h3>
+        <p class='js-data'></p>
+      </div>
+      <div id="duration" class="data-card">
+        <h3>Total Time Spent Birding</h3>
+        <p class='js-data'></p>
+      </div>
+      <div id="num-species" class="data-card">
+        <h3>Number of Species Reported</h3>
+        <p class='js-data'></p>
+      </div>
+    </div>
 
-				$.ajax({
-					url: './data/test_data.csv',
-					method: 'GET',
-					dataType: 'text',
-					success: function(data) {
-						var parsedData = parseData(data);
-						addDataToMap(parsedData);
-					}
-				});
-
-				function parseData(data) {
-					var rows = $.trim(data).split('\n');
-					var headers = rows[0].split(',');
-
-					//find the indices of some fields we want to get data out of:
-					var latIndex = headers.indexOf('Latitude');
-					var lonIndex = headers.indexOf('Longitude');
-					var locationNameIndex = headers.indexOf('Location');
-
-					rows.shift(1); //remove headers row;
-
-					var objArray = [];
-					var LocationNameList = [];
-					//convert each row into an object
-					$(rows).each(function(i, row) {
-						//THIS NEEDS TO HANDLE STRINGS WITH COMMAS IN THEM, eg.:
-						// "Race Point Beach, Provincetown"
-						var splitRow = row.split(',');
-						var location = splitRow[locationNameIndex]
-
-						//skip locations that are already processed.
-						if(LocationNameList.indexOf(location) === -1) {
-							LocationNameList.push(location);
-
-							var point = {
-								type: 'Feature',
-								properties: {
-									name: splitRow[locationNameIndex]
-								},
-								geometry: {
-									type: 'Point',
-									coordinates: [ parseFloat(splitRow[lonIndex]), parseFloat(splitRow[latIndex]) ];
-								}
-							};
-							objArray.push(point);
-						}
-					});
-
-					return objArray;
-				};
-
-				function addDataToMap(data) {
-					var locationsLayer = L.geoJson(data,{
-						onEachFeature: addPopupContent
-					}).addTo(map);
-
-				};
-				function addPopupContent(feature, layer) {
-					layer.bindPopup('<p>' + feature.properties.name + '</p>')
-				}
-			});
-		</script>
-	</body>
+  </body>
 </html>

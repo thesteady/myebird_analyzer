@@ -1,0 +1,38 @@
+ body {
+  background-color: #eee;
+  font-family: 'Arial';
+}
+#map {
+  height: 540px;
+}
+
+.data-cards-wrapper {
+  border: 1px solid green;
+  /*padding: 10px 0 10px 0;*/
+}
+
+.data-card {
+  border: 1px solid orange;
+
+  float: left;
+  /*display: inline-block;*/
+
+  height: 200px;
+  margin: 10px;
+  padding: 5px;
+  width: 10%;
+
+}
+.data-card h3 {
+  padding: 0 0 10px 0;
+  text-align: center;
+}
+.data-card h3, .data-card p {
+  margin: 5px;
+}
+
+#num-places p {
+  font-size: 48px;
+  line-height: 60px;
+  text-align: center;
+}
