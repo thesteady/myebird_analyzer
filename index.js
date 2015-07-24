@@ -21,12 +21,12 @@ $(function() {
       var parsedData = parseCSV(data);
       var uniqueSubmissions = getUniqueSubmissions(parsedData);
 
-      addTotalTimeSpent(uniqueSubmissions);
-
       var geoJSON = convertToGeoJSON(uniqueSubmissions);
 
-      showPointCount(geoJSON);
       addDataToMap(geoJSON);
+      showPointCount(geoJSON);
+      addTotalTimeSpent(uniqueSubmissions);
+      addSpeciesCount(uniqueSubmissions)
     }
   });
 
@@ -54,6 +54,11 @@ $(function() {
       duration: headers.indexOf('Duration (Min)')
     }
 
+    var speciesCols = {
+      commonName: headers.indexOf('Common Name'),
+      count: headers.indexOf('Count')
+    }
+
     var subIDList = [];
     var uniqueSubmissions = [];
 
@@ -66,29 +71,58 @@ $(function() {
       //only if a new submission
       if (subIDList.indexOf(submissionID) === -1) {
         var submission = _formatSubmission(record, cols);
+        submission = _addSpeciesAndCountToSubmissions(submission,record, speciesCols)
 
         uniqueSubmissions.push(submission);
         subIDList.push(submissionID);
+      } else {
+        // update the species list for that record
+
+        // find obj to update
+        //TODO: underscorify
+        var obj = $(uniqueSubmissions).filter(function(i, submission) {
+          return submission.submissionId === submissionID
+        })[0];
+        //add species for this record
+        _addSpeciesAndCountToSubmissions(obj, record, speciesCols);
       }
     }
 
     return uniqueSubmissions;
   }
 
+  function _addSpeciesAndCountToSubmissions(obj, record, speciesCols) {
+
+    _.each(speciesCols, function(value, key) {
+      obj.species[key] = record[value]
+    })
+
+    return obj
+  }
+
   function _formatSubmission(record, cols) {
     var obj = {};
 
-    _.each( _.keys(cols), function(key) {
+    _.each(cols, function(value, key) {
       if( _.includes(['lat', 'lon'], key) ) {
-        obj[key] = parseFloat(record[cols[key]])
+        obj[key] = parseFloat(record[value])
       }else if(key === 'duration'){
-        obj[key] = parseInt(record[cols[key]])
+        obj[key] = parseInt(record[value])
       } else {
-        obj[key] = record[ cols[key] ]
+        obj[key] = record[value]
       }
     });
 
+    obj.species = []
+
     return obj;
+  }
+
+  function addSpeciesCount(uniqueSubmissions) {
+    //go through
+
+    var str = "92";
+    $('#species-count .js-data').html(str);
   }
 
   function addTotalTimeSpent(uniqueSubmissions) {
