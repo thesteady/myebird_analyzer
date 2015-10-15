@@ -15,12 +15,20 @@
     <link rel="stylesheet" href="./index.css" />
     <script src="./vendor/jquery-2.1.4.min.js"></script>
     <script src="./vendor/leaflet-0.7.3/leaflet.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v1.4.0/turf.min.js'></script>
     <script src="./vendor/underscore.min.js"></script>
     <script src='./index.js'></script>
 
   </head>
   <body>
     <h1>My eBird Analyzer</h1>
+    <button id="upload-csv">Get Tha Data!</button>
+    <div class="buttons">
+      <button class="count-type-selector" data-type="all">All Count Types</button>
+      <button class="count-type-selector" data-type="stationary">Stationary</button>
+      <button class="count-type-selector" data-type="traveling">Traveling</button>
+    </div>
+
     <div id="map"></div>
 
     <div class="data-cards-wrapper">
@@ -37,6 +45,5 @@
         <p class='js-data'></p>
       </div>
     </div>
-
   </body>
 </html>

@@ -1,34 +1,75 @@
 $(function() {
   var map = L.map('map').setView([39.73, -104.99], 9);
+  window.map = map;
 
   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
-
-  $.ajax({
-    url: './data/test_data.csv',
-    method: 'GET',
-    dataType: 'text',
-    success: function(data) {
-      // parseCSV data for unique submissions
-      // - do i add the species data to each unique submission?
-      // use unique submissions to get total duration, total distance covered.
-      // use unique submissions to get unique locations
-      // calculate number of times at each location
-      // convert to json.
-
-      var parsedData = parseCSV(data);
-      var uniqueSubmissions = getUniqueSubmissions(parsedData);
-
-      var geoJSON = convertToGeoJSON(uniqueSubmissions);
-
-      addDataToMap(geoJSON);
-      showPointCount(geoJSON);
-      addTotalTimeSpent(uniqueSubmissions);
-      addSpeciesCount(uniqueSubmissions)
-    }
+  $('#upload-csv').click(function(e) {
+    $.ajax({
+      url: './data/test_data.csv',
+      method: 'GET',
+      dataType: 'text',
+      success: function(data) {
+        return processData(data);
+        //TODO: also hide/show selector buttons
+      }
+    });
   });
+
+  $('.count-type-selector').click(function(e) {
+    var $btn = $(e.currentTarget);
+    var countType = $btn.data("type");
+    var filter;
+
+
+
+    if(countType == "stationary") {
+      filter = "eBird - Stationary Count";
+    } else if (countType == "traveling") {
+      filter = "eBird - Traveling Count";
+    } else {
+      // no filter, show all data.
+      filter = undefined;
+      // TODO: figure out unfiltering works
+    }
+    //filter data based on count type
+    filteredData = turf.filter(data, "countType", filter);
+    debugger;
+
+    L.geoJson(filteredData, {style: {
+      "color": "green"
+    }}).addTo(map);
+  });
+
+  function processData(data) {
+    // parseCSV data for unique submissions
+    // - do i add the species data to each unique submission?
+    // use unique submissions to get total duration, total distance covered.
+    // use unique submissions to get unique locations
+    // calculate number of times at each location
+    // convert to json.
+    var parsedData = parseCSV(data);
+    var uniqueSubmissions = getUniqueSubmissions(parsedData);
+
+    var featureCollection = convertToGeoJSON(uniqueSubmissions);
+    window.data = featureCollection;
+
+    addDataToMap(featureCollection);
+    addBufferToMap(featureCollection);
+    showPointCount(featureCollection.features);
+    addTotalTimeSpent(uniqueSubmissions);
+    addSpeciesCount(uniqueSubmissions);
+  }
+
+
+  //playing with turf js.
+  function addBufferToMap(featureCollection) {
+    //makes a buffer of the first point w 1 mile radius and adds to map.
+    var buffer = turf.buffer(featureCollection.features[0], 1, 'miles');
+    L.geoJson(buffer).addTo(map);
+  }
 
   function parseCSV(data) {
     var rows = $.trim(data).split('\n');
@@ -51,7 +92,8 @@ $(function() {
       location: headers.indexOf('Location'),
       lat: headers.indexOf('Latitude'),
       lon: headers.indexOf('Longitude'),
-      duration: headers.indexOf('Duration (Min)')
+      duration: headers.indexOf('Duration (Min)'),
+      countType: headers.indexOf('Protocol')
     }
 
     var speciesCols = {
@@ -119,7 +161,7 @@ $(function() {
   }
 
   function addSpeciesCount(uniqueSubmissions) {
-    //go through
+    // TODO: go through
 
     var str = "92";
     $('#species-count .js-data').html(str);
@@ -177,7 +219,10 @@ $(function() {
       }
     }
 
-    return points;
+    return {
+      type: "FeatureCollection",
+      features: points
+    };
   }
 
   function createPoint(record) {
@@ -186,7 +231,8 @@ $(function() {
       properties: {
         name: record.location,
         visitCount: 1,
-        duration: record.duration
+        duration: record.duration,
+        countType: record.countType
       },
       geometry: {
         type: 'Point',
