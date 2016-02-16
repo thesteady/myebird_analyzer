@@ -1,0 +1,29 @@
+{
+  "name": "myebird_analyzer",
+  "version": "1.0.0",
+  "description": "data dashboard for personal eBird data",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thesteady/myebird_analyzer.git"
+  },
+  "keywords": [
+    "birds",
+    "ebird"
+  ],
+  "author": "Laura Steadman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thesteady/myebird_analyzer/issues"
+  },
+  "homepage": "https://github.com/thesteady/myebird_analyzer#readme",
+  "dependencies": {
+    "express": "^4.13.4",
+    "leaflet": "^0.7.7",
+    "lodash": "^4.3.0",
+    "papaparse": "^4.1.2"
+  }
+}
