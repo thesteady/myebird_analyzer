@@ -5,13 +5,11 @@ Hacking together a dashboard-y summary of personal data from ebird, which comes 
 
 
 ## Development
-
-all browser, all the time.
-`http-server ./` to run on `localhost:8080`.
+- install dependencies with: `bower install`
+- run `http-server ./` to run on `localhost:8080`. must be installed as npm module.
 
 
 ## Todo
-
   x map unique locations
   x how many times been to each location?
   - map marker color scale for # times at each
