@@ -95,7 +95,7 @@ $(function() {
     return uniqueChecklists;
   }
 
-  // info box functions
+  // info box functions----------------------------------------------------------
 
   function addSpeciesCount(uniqueSubmissions) {
     var count = _.uniq(_.pluck(_.flatten(_.pluck(uniqueSubmissions, "species")), "commonName")).length
@@ -103,6 +103,7 @@ $(function() {
   }
 
   function addTotalTimeSpent(uniqueSubmissions) {
+    // this number doesn't seem right....
     var total = _.reduce(uniqueSubmissions, function(duration, submission) {
       return duration + submission["Duration (Min)"]
     },0)
@@ -117,9 +118,10 @@ $(function() {
     $('#num-places .js-data').html(points.length);
   };
 
-  // map functions
+// mapping functions---------------------------------------------------------------
 
   function addDataToMap(data) {
+    console.log("lat,long", data);
     var locationsLayer = L.geoJson(data,{
       onEachFeature: addPopupContent
     }).addTo(map);
@@ -136,7 +138,7 @@ $(function() {
 
     return [
     '<h3>', name, '</h3><p>You\'ve been here ', visitCount, pluralizedTimes,
-    'and have spent ', prettyTime,' birding here.</p><p>You have seen ', speciesCount, ' species here.</p>'
+    'and have spent ', prettyTime,' birding here.</p><p>You\'ve seen ', speciesCount, ' species here.</p>'
     ].join('');
   };
 });

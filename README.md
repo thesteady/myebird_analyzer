@@ -21,6 +21,8 @@ Hacking together a dashboard-y summary of personal data from ebird, which comes 
 
   - basic summaries: species, ticks, trips. by country/state/county
 
+TODO:
 
-NEED TO HANDLE STRINGS WITH COMMAS IN THEM, eg.:
-"Race Point Beach, Provincetown"
+figure out where I'm parsing data incorrectly in unique-ing submissions vs. species.
+
+seems to have problems with 22 species --> 22 times visited, then reports overage of hours spent.

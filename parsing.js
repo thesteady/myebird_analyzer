@@ -8,14 +8,13 @@ function parseCSV(data) {
     record["Duration (Min)"] = parseInt(record["Duration (Min)"])
     record["Count"] = parseInt(record["Count"]) // # individuals reported
     // record["Number Of Observers"] = parseInt(record["Number Of Observers"])
-
-    return record
+    if(record["Submission ID"] != "") {
+      return record
+    }
   });
-  console.log("parsedRecord", parsedDataRecords[0])
-
   return {
     headers: parsedData.meta.fields,
-    records: parsedDataRecords
+    records: _.compact(parsedDataRecords)
   };
 }
 
