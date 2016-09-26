@@ -18,44 +18,38 @@ $(function() {
     });
   });
 
-  $('.count-type-selector').click(function(e) {
-    var $btn = $(e.currentTarget);
-    var countType = $btn.data("type");
-    var filter;
+  // $('.count-type-selector').click(function(e) {
+  //   var $btn = $(e.currentTarget);
+  //   var countType = $btn.data("type");
+  //   var filter;
 
-    if(countType == "stationary") {
-      filter = "eBird - Stationary Count";
-    } else if (countType == "traveling") {
-      filter = "eBird - Traveling Count";
-    } else {
-      // no filter, show all data.
-      filter = undefined;
-      // TODO: figure out how unfiltering works
-    }
-    //filter data based on count type
-    filteredData = turf.filter(data, "countType", filter);
-    L.geoJson(filteredData, {style: {
-      "color": "green"
-    }}).addTo(map);
-  });
+  //   if(countType == "stationary") {
+  //     filter = "eBird - Stationary Count";
+  //   } else if (countType == "traveling") {
+  //     filter = "eBird - Traveling Count";
+  //   } else {
+  //     // no filter, show all data.
+  //     filter = undefined;
+  //     // TODO: figure out how unfiltering works
+  //   }
+  //   //filter data based on count type
+  //   filteredData = turf.filter(data, "countType", filter);
+  //   L.geoJson(filteredData, {style: {
+  //     "color": "green"
+  //   }}).addTo(map);
+  // });
 
   function processData(data) {
-    // parseCSV data for unique submissions
-    // - do i add the species data to each unique submission?
-    // use unique submissions to get total duration, total distance covered.
-    // use unique submissions to get unique locations
-    // calculate number of times at each location
-    // convert to json.
     var parsedData = parseCSV(data); //headers, records
     var uniqueSubmissions = getUniqueChecklists(parsedData.records);
     var featureCollection = convertToGeoJSON(uniqueSubmissions);
     window.data = featureCollection;
 
     addDataToMap(featureCollection);
-    // addBufferToMap(featureCollection); // -- turfjs playing
     showPointCount(featureCollection.features);
     addTotalTimeSpent(uniqueSubmissions);
     addSpeciesCount(uniqueSubmissions);
+    // addBufferToMap(featureCollection); // -- turfjs playing
   }
 
 
@@ -67,32 +61,35 @@ $(function() {
   // }
 
   function getUniqueChecklists(records) {
-    var checklistIdList = [];
-    var uniqueChecklists = [];
-    var checklist;
-    _.each(records, function(record) {
-      var checklistId = record["Submission ID"];
-      if (_.contains(checklistIdList, checklistId)) {
-        // not a unique submission, so find existing submission
-        checklist = _.find(uniqueChecklists, function(list) {
-          return list["Submission ID"] == checklistId;
-        });
-      } else {
-        // is a new checklistId
-        checklist = _.clone(record);
-        checklist.species = [];
-      }
-
-      checklist.species.push({
-        commonName: record["Common Name"],
-        scientificName: record["Scientific Name"],
-        count: record["Count"]
-      });
-
-      uniqueChecklists.push(checklist);
-      checklistIdList.push(checklistId)
+    var submissions = _.groupBy(records, function(record) {
+      return record["Submission ID"]
     });
-    return uniqueChecklists;
+
+    var fixedSubmissions = _.mapObject(submissions, function(submissionRecords, submissionId) {
+      //create a new submission record here
+        var newObj = _.clone(submissionRecords[0])
+
+        //add all the species to the object
+        newObj.species = _.map(submissionRecords, function(record) {
+          return {
+            commonName: record["Common Name"],
+            scientificName: record["Scientific Name"],
+            count: record.count
+          }
+        });
+
+        //clean up the object so it doesnt have data from the
+        // first species still floating confusingly
+        delete newObj["Common Name"]
+        delete newObj["Scientific Name"]
+        delete newObj.count
+        delete newObj["Species Comments"]
+        delete newObj["Breeding Code"]
+        delete newObj["Taxonomic Order"]
+
+        return newObj
+    });
+    return _.values(fixedSubmissions);
   }
 
   // info box functions----------------------------------------------------------
@@ -105,7 +102,7 @@ $(function() {
   function addTotalTimeSpent(uniqueSubmissions) {
     // this number doesn't seem right....
     var total = _.reduce(uniqueSubmissions, function(duration, submission) {
-      return duration + submission["Duration (Min)"]
+      return duration + submission.durationMin
     },0)
 
     var duration = convertMinutesToPrettyFormatTime(total);
@@ -129,7 +126,7 @@ $(function() {
 
   function addPopupContent(feature, layer) {
     var props = feature.properties;
-    layer.bindPopup(popUpContent(props.name, props.visitCount, props.duration, props.speciesCount));
+    layer.bindPopup(popUpContent(props.name, props.visitCount, props.duration, props.species.length));
   };
 
   function popUpContent(name, visitCount, duration, speciesCount) {

@@ -3,15 +3,24 @@
 function parseCSV(data) {
   var parsedData = Papa.parse(data, {delimiter: ",", header: true, linebreak: "\n"})
   var parsedDataRecords = _.map(parsedData.data, function(record) {
-    record["lat"] = parseFloat(record["Latitude"])
-    record["lon"] = parseFloat(record["Longitude"])
-    record["Duration (Min)"] = parseInt(record["Duration (Min)"])
-    record["Count"] = parseInt(record["Count"]) // # individuals reported
+    record.lat = parseFloat(record["Latitude"])
+    record.lon = parseFloat(record["Longitude"])
+    record.location = record["Location"]
+    record.durationMin = parseInt(record["Duration (Min)"])
+    record.count = parseInt(record["Count"]) // # individuals reported
     // record["Number Of Observers"] = parseInt(record["Number Of Observers"])
+
+    delete record["Duration (Min)"]
+    delete record["Latitude"]
+    delete record["Longitude"]
+    delete record["Location"]
+    delete record["Count"]
+
     if(record["Submission ID"] != "") {
       return record
     }
   });
+
   return {
     headers: parsedData.meta.fields,
     records: _.compact(parsedDataRecords)
@@ -27,10 +36,10 @@ function convertToGeoJSON(submissions) {
     return {
       type: 'Feature',
       properties: {
-        name: record["Location"],
+        name: record.location,
         visitCount: 1,
-        speciesCount: record["species"].length,
-        duration: record["Duration (Min)"],
+        species: _.map(record.species, function(rec) {return rec.commonName }),
+        duration: record.durationMin,
         countType: record["Protocol"]
       },
       geometry: {
@@ -39,15 +48,24 @@ function convertToGeoJSON(submissions) {
       }
     };
   };
+  var sortedSubmissions = _.sortBy(submissions, function(sub) { return sub["Location"]})
 
-  _.each(submissions, function(submission) {
-    var location = submission["Location"];
+  _.each(sortedSubmissions, function(submission) {
+    var location = submission.location;
+
     if(_.includes(locationsList, location)) {
       var point = _.find(points, function(point) {
         return point.properties.name == location;
       });
+
+      var submissionSpecies = _.map(submission.species, function(rec){
+        return rec.commonName;
+      });
+      var uniqueSpeciesList = _.union(point.properties.species, submissionSpecies);
+
       point.properties.visitCount ++ ;
-      point.properties.duration += submission["Duration (Min)"];
+      point.properties.duration += submission.durationMin;
+      point.properties.species = uniqueSpeciesList
     } else {
       // new point!
       locationsList.push(location);
