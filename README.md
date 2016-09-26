@@ -1,8 +1,7 @@
 "My eBird" Analyzer
 ===================
 
-Hacking together a dashboard-y summary of personal data from ebird, which comes in via CSV.
-
+Hacking together a dashboard-y summary of personal data from eBird.org, which comes in via CSV.
 
 ## Development
 - install dependencies with: `bower install`
@@ -13,16 +12,12 @@ Hacking together a dashboard-y summary of personal data from ebird, which comes 
   x map unique locations
   x how many times been to each location?
   - map marker color scale for # times at each
+  - implement selection buttons
 
   - unique submissions:
-    - how many hours birded? at each location and total
+    x how many hours birded? at each location and total
     - heat map of hours birded / day/month/year
     - graph of submissions over time
 
   - basic summaries: species, ticks, trips. by country/state/county
-
-TODO:
-
-figure out where I'm parsing data incorrectly in unique-ing submissions vs. species.
-
-seems to have problems with 22 species --> 22 times visited, then reports overage of hours spent.
+  - form to upload your csv rather than hard-coded
