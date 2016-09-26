@@ -1,5 +1,5 @@
 $(function() {
-  var map = L.map('map').setView([39.73, -104.99], 9);
+  var map = L.map('map').setView([39.73, -104.99], 8);
   window.map = map;
 
   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -18,26 +18,26 @@ $(function() {
     });
   });
 
-  // $('.count-type-selector').click(function(e) {
-  //   var $btn = $(e.currentTarget);
-  //   var countType = $btn.data("type");
-  //   var filter;
+  $('.count-type-selector').click(function(e) {
+    var $btn = $(e.currentTarget);
+    var countType = $btn.data("type");
+    var filter;
 
-  //   if(countType == "stationary") {
-  //     filter = "eBird - Stationary Count";
-  //   } else if (countType == "traveling") {
-  //     filter = "eBird - Traveling Count";
-  //   } else {
-  //     // no filter, show all data.
-  //     filter = undefined;
-  //     // TODO: figure out how unfiltering works
-  //   }
-  //   //filter data based on count type
-  //   filteredData = turf.filter(data, "countType", filter);
-  //   L.geoJson(filteredData, {style: {
-  //     "color": "green"
-  //   }}).addTo(map);
-  // });
+    if(countType == "stationary") {
+      filter = "eBird - Stationary Count";
+    } else if (countType == "traveling") {
+      filter = "eBird - Traveling Count";
+    } else {
+      // no filter, show all data.
+      filter = undefined;
+      // TODO: figure out how unfiltering works
+    }
+    //filter data based on count type
+    filteredData = turf.filter(data, "countType", filter);
+    L.geoJson(filteredData, {style: {
+      "color": "green"
+    }}).addTo(map);
+  });
 
   function processData(data) {
     var parsedData = parseCSV(data); //headers, records
@@ -118,24 +118,29 @@ $(function() {
 // mapping functions---------------------------------------------------------------
 
   function addDataToMap(data) {
-    console.log("lat,long", data);
     var locationsLayer = L.geoJson(data,{
       onEachFeature: addPopupContent
     }).addTo(map);
   };
 
   function addPopupContent(feature, layer) {
-    var props = feature.properties;
-    layer.bindPopup(popUpContent(props.name, props.visitCount, props.duration, props.species.length));
+    var content = popUpContent(
+      feature.properties.name,
+      feature.properties.visitCount,
+      feature.properties.duration,
+      feature.properties.species.length
+    )
+    layer.bindPopup(content);
   };
 
   function popUpContent(name, visitCount, duration, speciesCount) {
     var prettyTime = convertMinutesToPrettyFormatTime(duration);
-    var pluralizedTimes = visitCount > 1 ? " times " : " time ";
-
+    var pluralizedVisits = visitCount > 1 ? " times " : " time ";
+    var prettyVisits = [visitCount, pluralizedVisits].join("")
     return [
-    '<h3>', name, '</h3><p>You\'ve been here ', visitCount, pluralizedTimes,
-    'and have spent ', prettyTime,' birding here.</p><p>You\'ve seen ', speciesCount, ' species here.</p>'
+      '<h3>', name, '</h3><p>You\'ve been here ', prettyVisits,
+      'and have spent ', prettyTime,' birding here.</p>',
+      '<p>You\'ve seen ', speciesCount, ' species here.</p>'
     ].join('');
   };
 });
